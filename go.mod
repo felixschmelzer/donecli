@@ -1,4 +1,4 @@
-module github.com/felixschmelzer/done
+module github.com/felixschmelzer/donecli
 
 go 1.22
 
