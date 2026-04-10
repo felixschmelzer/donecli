@@ -25,7 +25,7 @@ func configPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "donecli", "config.json"), nil
+	return filepath.Join(home, ".config", "done-msg", "config.json"), nil
 }
 
 func loadConfig() (*Config, error) {

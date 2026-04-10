@@ -1,4 +1,4 @@
-module github.com/felixschmelzer/donecli
+module github.com/felixschmelzer/done-msg
 
 go 1.25.0
 

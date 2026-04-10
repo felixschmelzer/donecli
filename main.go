@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: done <command> [args...]\n       done --config")
+		fmt.Fprintln(os.Stderr, "Usage: done-msg <command> [args...]\n       done --config")
 		os.Exit(1)
 	}
 
@@ -23,7 +23,7 @@ func main() {
 
 	cfg, err := loadConfig()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "done: no config found, run 'done --config' to set up")
+		fmt.Fprintln(os.Stderr, "done-msg: no config found, run 'done --config' to set up")
 		os.Exit(1)
 	}
 
