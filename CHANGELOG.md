@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/felixschmelzer/ding/compare/v1.2.3...v1.3.0) (2026-04-11)
+
+
+### Features
+
+* -h and other short arguments ([20bea0e](https://github.com/felixschmelzer/ding/commit/20bea0e38147bbb13958c1786758700ecb135376))
+
 ## [1.2.3](https://github.com/felixschmelzer/ding/compare/v1.2.2...v1.2.3) (2026-04-11)
 
 
