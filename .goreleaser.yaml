@@ -39,7 +39,10 @@ homebrew_casks:
     description: "Run any shell command and get a Telegram notification when it finishes."
     hooks:
       post:
-        install: "system_command '/usr/bin/xattr', args: ['-dr', 'com.apple.quarantine', '#{staged_path}/ding']"
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/ding"]
+          end
 
 checksum:
   name_template: checksums.txt
