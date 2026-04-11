@@ -9,20 +9,37 @@ import (
 
 var version = "dev"
 
+const usage = `ding — run a command and get a Telegram notification when it finishes
+
+Usage:
+  ding <command> [args...]
+
+Options:
+  -c, --config   Open the interactive setup
+  -v, --version  Print version
+  -h, --help     Show this help
+
+Examples:
+  ding make build
+  ding npm run test
+  ding ./deploy.sh`
+
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		fmt.Println("ding", version)
+	if len(os.Args) < 2 {
+		fmt.Println(usage)
 		os.Exit(0)
 	}
 
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: ding <command> [args...]\n       done --config")
-		os.Exit(1)
-	}
-
-	if os.Args[1] == "--config" {
+	switch os.Args[1] {
+	case "-h", "--help":
+		fmt.Println(usage)
+		os.Exit(0)
+	case "-v", "--version":
+		fmt.Println("ding", version)
+		os.Exit(0)
+	case "-c", "--config":
 		if err := runConfig(); err != nil {
-			fmt.Fprintf(os.Stderr, "done: %v\n", err)
+			fmt.Fprintf(os.Stderr, "ding: %v\n", err)
 			os.Exit(1)
 		}
 		return
@@ -30,7 +47,7 @@ func main() {
 
 	cfg, err := loadConfig()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "ding: no config found, run 'done --config' to set up")
+		fmt.Fprintln(os.Stderr, "ding: no config found, run 'ding -c' to set up")
 		os.Exit(1)
 	}
 
