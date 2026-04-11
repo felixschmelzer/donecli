@@ -13,7 +13,7 @@ Exit: 0 | Duration: 2m 14s | Finished: 14:32:01
 ### curl (no Go required)
 
 ```bash
-curl -fsSL https://github.com/felixschmelzer/ding/releases/latest/download/ding-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') -o /usr/local/bin/ding && chmod +x /usr/local/bin/ding
+curl -fsSL https://github.com/felixschmelzer/ding/releases/latest/download/ding-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') -o /tmp/ding && chmod +x /tmp/ding && sudo mv /tmp/ding /usr/local/bin/ding
 ```
 
 | Platform | Download |
