@@ -18,7 +18,8 @@ No test files exist in this project.
 `ding` is a single-package Go application (4 files) that wraps any shell command, runs it in a PTY, and sends a Telegram notification when it finishes.
 
 **Entry point & flow (`main.go`):**
-- Parses CLI args; `--config` flag launches the TUI setup, `--version` prints the version
+- Parses CLI args; `--config` flag launches the TUI setup, `--version` prints the version, `--completions <shell>` outputs a shell completion script
+- Embeds shell completion scripts (`completions/_ding`, `completions/ding.bash`, `completions/ding.fish`) via `//go:embed`
 - Starts an optional goroutine for periodic "still running" Telegram pings (configurable interval)
 - Calls `runCommand()` from `runner.go`, then sends the final Telegram notification
 - Optionally prints a terminal summary if `ShowSummary` is set in config
@@ -27,6 +28,9 @@ No test files exist in this project.
 - `runner.go` — Runs the command in a PTY (`github.com/creack/pty`), mirrors I/O and terminal resize signals; falls back to normal exec if PTY unavailable
 - `config.go` — Bubble Tea TUI for interactive setup; loads/saves JSON config at `~/.config/ding/config.json`
 - `telegram.go` — Sends HTTP POST to Telegram Bot API; formats success/failure/running messages using HTML parse mode
+- `completions/_ding` — zsh completion: delegates to the wrapped command's completion via `_normal`
+- `completions/ding.bash` — bash completion: adjusts `COMP_WORDS`/`COMP_CWORD` and calls the wrapped command's registered completion function
+- `completions/ding.fish` — fish completion: uses `__fish_complete_subcommand` to delegate
 
 **Config struct** (`config.go`):
 ```go

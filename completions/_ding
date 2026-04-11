@@ -1,0 +1,19 @@
+#compdef ding
+
+_ding() {
+  local state
+
+  _arguments -C \
+    '(-h --help)'{-h,--help}'[show help]' \
+    '(-v --version)'{-v,--version}'[print version]' \
+    '(-c --config)'{-c,--config}'[open interactive setup]' \
+    '--completions[output shell completion script]:shell:(bash zsh fish)' \
+    '1:command:_command_names -e' \
+    '*::args:->args'
+
+  if [[ $state == args ]]; then
+    _normal
+  fi
+}
+
+_ding "$@"

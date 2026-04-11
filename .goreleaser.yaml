@@ -28,6 +28,9 @@ archives:
     name_template: "ding-{{ .Os }}-{{ .Arch }}"
     files:
       - man/ding.1
+      - completions/_ding
+      - completions/ding.bash
+      - completions/ding.fish
 
 homebrew_casks:
   - name: ding
