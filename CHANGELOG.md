@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/felixschmelzer/ding/compare/v1.4.1...v1.4.2) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ops:** updated deprecated release argument ([798f488](https://github.com/felixschmelzer/ding/commit/798f4881bfd7c8bc1e7ef81145428756db683d88))
+
 ## [1.4.1](https://github.com/felixschmelzer/ding/compare/v1.4.0...v1.4.1) (2026-04-11)
 
 
