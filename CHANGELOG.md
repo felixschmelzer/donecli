@@ -1,3 +1,10 @@
+## [1.4.7](https://github.com/felixschmelzer/ding/compare/v1.4.6...v1.4.7) (2026-04-11)
+
+
+### Bug Fixes
+
+* add manpages ([b54693d](https://github.com/felixschmelzer/ding/commit/b54693d512fd4dbb58e095c0813bfb3012254ba1))
+
 ## [1.4.6](https://github.com/felixschmelzer/ding/compare/v1.4.5...v1.4.6) (2026-04-11)
 
 
