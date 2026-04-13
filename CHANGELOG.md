@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/felixschmelzer/ding/compare/v1.5.0...v1.6.0) (2026-04-13)
+
+
+### Features
+
+* add command history tracking and browser TUI ([b849f01](https://github.com/felixschmelzer/ding/commit/b849f015c9ded91e6a774a5480e50f47d0465d55))
+
 # [1.5.0](https://github.com/felixschmelzer/ding/compare/v1.4.7...v1.5.0) (2026-04-11)
 
 
