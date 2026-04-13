@@ -19,6 +19,7 @@ type Config struct {
 	ChatID         string `json:"chat_id"`
 	NotifyInterval int    `json:"notify_interval"` // minutes between "still running" pings; 0 = disabled
 	ShowSummary    bool   `json:"show_summary"`    // print a summary to the terminal when the command finishes
+	TrackHistory   bool   `json:"track_history"`   // save run records to ~/.local/share/ding/history.json
 }
 
 func configPath() (string, error) {
@@ -73,13 +74,14 @@ const (
 	stateCancelled
 )
 
-const totalFocusable = 4 // 3 text inputs + 1 checkbox
+const totalFocusable = 5 // 3 text inputs + 2 checkboxes
 
 type configModel struct {
-	inputs      [3]textinput.Model
-	showSummary bool
-	focused     int // 0-2: text inputs, 3: summary checkbox
-	state       configState
+	inputs       [3]textinput.Model
+	showSummary  bool
+	trackHistory bool
+	focused      int // 0-2: text inputs, 3: summary checkbox, 4: history checkbox
+	state        configState
 }
 
 var (
@@ -114,6 +116,7 @@ func initialConfigModel() configModel {
 	interval.SetWidth(50)
 
 	showSummary := false
+	trackHistory := false
 	if existing != nil {
 		token.SetValue(existing.BotToken)
 		chat.SetValue(existing.ChatID)
@@ -121,14 +124,16 @@ func initialConfigModel() configModel {
 			interval.SetValue(strconv.Itoa(existing.NotifyInterval))
 		}
 		showSummary = existing.ShowSummary
+		trackHistory = existing.TrackHistory
 	}
 	token.Focus()
 
 	return configModel{
-		inputs:      [3]textinput.Model{token, chat, interval},
-		showSummary: showSummary,
-		focused:     0,
-		state:       stateEditing,
+		inputs:       [3]textinput.Model{token, chat, interval},
+		showSummary:  showSummary,
+		trackHistory: trackHistory,
+		focused:      0,
+		state:        stateEditing,
 	}
 }
 
@@ -169,8 +174,12 @@ func (m configModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "shift+tab", "up":
 			return m.moveFocus(-1)
 		case "space":
-			if m.focused == totalFocusable-1 {
+			switch m.focused {
+			case 3:
 				m.showSummary = !m.showSummary
+				return m, nil
+			case 4:
+				m.trackHistory = !m.trackHistory
 				return m, nil
 			}
 		}
@@ -206,20 +215,32 @@ func (m configModel) View() tea.View {
 		m.inputs[2].View()+hintStyle.Render("  minutes (0 = off)"),
 	)
 
-	checkMark := "[ ] "
+	summaryMark := "[ ] "
 	if m.showSummary {
-		checkMark = "[x] "
+		summaryMark = "[x] "
 	}
-	checkboxStyle := labelStyle
-	if m.focused == totalFocusable-1 {
-		checkboxStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	summaryStyle := labelStyle
+	if m.focused == 3 {
+		summaryStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	}
+
+	historyMark := "[ ] "
+	if m.trackHistory {
+		historyMark = "[x] "
+	}
+	historyStyle := labelStyle
+	if m.focused == 4 {
+		historyStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	}
 
 	terminalHeader := lipgloss.JoinVertical(lipgloss.Left,
 		titleStyle.Render("Terminal"),
 		labelStyle.Render("Options for output shown directly in your terminal."),
 	)
-	terminalForm := checkboxStyle.Render(checkMark + "Show summary when command finishes")
+	terminalForm := lipgloss.JoinVertical(lipgloss.Left,
+		summaryStyle.Render(summaryMark+"Show summary when command finishes"),
+		historyStyle.Render(historyMark+"Track command history  (view with: ding --history)"),
+	)
 
 	body := lipgloss.JoinVertical(lipgloss.Left,
 		telegramHeader,
@@ -270,7 +291,7 @@ func runConfig() error {
 		notifyInterval = v
 	}
 
-	if err := saveConfig(&Config{BotToken: token, ChatID: chatID, NotifyInterval: notifyInterval, ShowSummary: m.showSummary}); err != nil {
+	if err := saveConfig(&Config{BotToken: token, ChatID: chatID, NotifyInterval: notifyInterval, ShowSummary: m.showSummary, TrackHistory: m.trackHistory}); err != nil {
 		return fmt.Errorf("failed to save config: %w", err)
 	}
 

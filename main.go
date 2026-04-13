@@ -27,6 +27,7 @@ Usage:
 
 Options:
   -c, --config                  Open the interactive setup
+  -H, --history                 Browse command run history
   -v, --version                 Print version
   -h, --help                    Show this help
   --completions install         Auto-install completions for the current shell
@@ -38,6 +39,7 @@ Examples:
   ding ./deploy.sh
   ding -h                       # opens help
   ding -c                       # opens config ui
+  ding --history                # browse run history
   ding --completions install    # install shell completions automatically`
 
 func main() {
@@ -55,6 +57,12 @@ func main() {
 		os.Exit(0)
 	case "-c", "--config":
 		if err := runConfig(); err != nil {
+			fmt.Fprintf(os.Stderr, "ding: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	case "-H", "--history":
+		if err := runHistory(); err != nil {
 			fmt.Fprintf(os.Stderr, "ding: %v\n", err)
 			os.Exit(1)
 		}
@@ -114,10 +122,39 @@ func main() {
 		}()
 	}
 
+	// Save a partial record before running so in-progress runs appear in history.
+	var runID, runWd string
+	if cfg.TrackHistory {
+		runWd, _ = os.Getwd()
+		runID = fmt.Sprintf("%d", cmdStart.UnixNano())
+		if saveErr := appendRun(RunRecord{
+			ID:        runID,
+			StartTime: cmdStart,
+			Command:   strings.Join(args, " "),
+			WorkDir:   runWd,
+			// EndTime is zero — signals "in progress" to the history TUI
+		}); saveErr != nil {
+			fmt.Fprintf(os.Stderr, "ding: failed to save run history: %v\n", saveErr)
+		}
+	}
+
 	exitCode, duration, err := runCommand(args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "done: %v\n", err)
 		os.Exit(1)
+	}
+
+	if cfg.TrackHistory && runID != "" {
+		if saveErr := updateRun(RunRecord{
+			ID:        runID,
+			StartTime: cmdStart,
+			EndTime:   cmdStart.Add(duration),
+			Command:   strings.Join(args, " "),
+			ExitCode:  exitCode,
+			WorkDir:   runWd,
+		}); saveErr != nil {
+			fmt.Fprintf(os.Stderr, "ding: failed to update run history: %v\n", saveErr)
+		}
 	}
 
 	cmd := strings.Join(args, " ")

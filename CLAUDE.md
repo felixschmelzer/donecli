@@ -15,18 +15,19 @@ No test files exist in this project.
 
 ## Architecture
 
-`ding` is a single-package Go application (4 files) that wraps any shell command, runs it in a PTY, and sends a Telegram notification when it finishes.
+`ding` is a single-package Go application (5 files) that wraps any shell command, runs it in a PTY, and sends a Telegram notification when it finishes.
 
 **Entry point & flow (`main.go`):**
-- Parses CLI args; `--config` flag launches the TUI setup, `--version` prints the version, `--completions <shell>` outputs a shell completion script
+- Parses CLI args; `--config` launches TUI setup, `--history` opens the history browser, `--version` prints the version, `--completions <shell>` outputs a shell completion script
 - Embeds shell completion scripts (`completions/_ding`, `completions/ding.bash`, `completions/ding.fish`) via `//go:embed`
 - Starts an optional goroutine for periodic "still running" Telegram pings (configurable interval)
-- Calls `runCommand()` from `runner.go`, then sends the final Telegram notification
+- Calls `runCommand()` from `runner.go`, then if `TrackHistory` is enabled saves the run via `appendRun()`, then sends the final Telegram notification
 - Optionally prints a terminal summary if `ShowSummary` is set in config
 
 **Key files:**
 - `runner.go` — Runs the command in a PTY (`github.com/creack/pty`), mirrors I/O and terminal resize signals; falls back to normal exec if PTY unavailable
 - `config.go` — Bubble Tea TUI for interactive setup; loads/saves JSON config at `~/.config/ding/config.json`
+- `history.go` — `RunRecord` model, JSON storage at `~/.local/share/ding/history.json`, and Bubble Tea history browser TUI
 - `telegram.go` — Sends HTTP POST to Telegram Bot API; formats success/failure/running messages using HTML parse mode
 - `completions/_ding` — zsh completion: delegates to the wrapped command's completion via `_normal`
 - `completions/ding.bash` — bash completion: adjusts `COMP_WORDS`/`COMP_CWORD` and calls the wrapped command's registered completion function
@@ -39,9 +40,30 @@ type Config struct {
     ChatID         string `json:"chat_id"`
     NotifyInterval int    `json:"notify_interval"` // minutes; 0 = disabled
     ShowSummary    bool   `json:"show_summary"`
+    TrackHistory   bool   `json:"track_history"`   // save runs to history
 }
 ```
 Config is stored at `~/.config/ding/config.json`.
+
+**RunRecord struct** (`history.go`):
+```go
+type RunRecord struct {
+    ID        string    `json:"id"`         // UnixNano timestamp string
+    StartTime time.Time `json:"start_time"`
+    EndTime   time.Time `json:"end_time"`
+    Command   string    `json:"command"`
+    ExitCode  int       `json:"exit_code"`
+    WorkDir   string    `json:"work_dir"`
+}
+```
+History is stored at `~/.local/share/ding/history.json` (XDG data dir, separate from config).
+
+**History TUI (`ding --history` / `ding -H`):**
+- Sortable table: `[1-5]` keys sort by Start, Duration, Exit, Command, Folder (toggle asc/desc)
+- Live search: `[/]` filters by command or folder as you type
+- Navigation: `↑↓`, `jk`, `g/G` (top/bottom)
+- `[d]` delete selected run with confirmation, `[D]` clear all runs with confirmation
+- `[q]`/`esc` to quit
 
 ## CI / Releases
 
